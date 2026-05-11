@@ -134,9 +134,18 @@ def downscale(request: DownscaleRequest) -> DownscaleResponse:
             VariableResult(name=var, mean=mean_grid, std=std_grid)
         )
 
+    # Run physical diagnostics on mean fields
+    from diagnostics.report import run_diagnostics
+    mean_fields = {
+        var["name"]: np.array(var["mean"])
+        for var in [v.model_dump() for v in variable_results]
+    }
+    diag_report = run_diagnostics(mean_fields)
+
     return DownscaleResponse(
         region=request.region,
         date=request.date,
         downscale_factor=model.downscale_factor,
         variables=variable_results,
+        diagnostics=diag_report.to_dict(),
     )

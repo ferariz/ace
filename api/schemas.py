@@ -37,3 +37,12 @@ class DownscaleResponse(BaseModel):
     date: str
     downscale_factor: int
     variables: list[VariableResult]
+
+
+class DownscaleResponse(BaseModel):
+    """Output of a single downscaling inference call."""
+    region: BoundingBox
+    date: str
+    downscale_factor: int
+    variables: list[VariableResult]
+    diagnostics: dict | None = None   # physical plausibility report

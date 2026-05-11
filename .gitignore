@@ -143,3 +143,5 @@ scratch/
 scripts/data_process/.nfs*
 
 joblogs/
+# Fork venv
+.venv/

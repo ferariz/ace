@@ -93,11 +93,22 @@ class MockACEModel:
         lon_f = lon_c * self._DOWNSCALE_FACTOR
 
         rng = np.random.default_rng(seed=42)
-        return {
-            var: rng.standard_normal((n_samples, lat_f, lon_f)).astype(np.float32)
-            for var in self.out_names
-        }
 
+        # Physically-constrained synthetic outputs
+        # precipitation: non-negative, log-normal (mm/day), typical 0-20 range
+        # tmp2m: temperature near surface (K), ~270-305 range
+        # u10m, v10m: wind components (m/s), can be negative, ~±15
+        physical_ranges = {
+            "precipitation": lambda: rng.lognormal(mean=0.5, sigma=0.8,
+                                 size=(n_samples, lat_f, lon_f)).astype(np.float32),
+            "tmp2m":         lambda: (rng.normal(loc=290.0, scale=8.0,
+                                 size=(n_samples, lat_f, lon_f))).astype(np.float32),
+            "u10m":          lambda: rng.normal(loc=0.0, scale=5.0,
+                                 size=(n_samples, lat_f, lon_f)).astype(np.float32),
+            "v10m":          lambda: rng.normal(loc=0.0, scale=5.0,
+                                 size=(n_samples, lat_f, lon_f)).astype(np.float32),
+        }
+        return {var: physical_ranges[var]() for var in self.out_names}
 
 # ---------------------------------------------------------------------------
 # Real model wrapper — thin adapter over fme's DiffusionModel
